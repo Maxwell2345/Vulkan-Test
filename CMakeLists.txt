@@ -1,9 +1,25 @@
 cmake_minimum_required(VERSION 4.1.2)
 
+include(FetchContent)
+
 project(Vulkan-Test)
 
 set(SDL3_VERSION "3.4.16")
 set(VULKAN_VERSION "1.4.357.1")
+
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
+)
+FetchContent_MakeAvailable(glm)
+
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG        11.0.2 # Use a stable version tag
+)
+FetchContent_MakeAvailable(fmt)
 
 if (LINUX)
 	message(STATUS "Using Linux OS")
@@ -58,7 +74,16 @@ endif()
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(IBUS REQUIRED ibus-1.0)
 
-add_executable(${PROJECT_NAME} Main.cpp)
+add_executable(${PROJECT_NAME} 
+	Main.cpp
+	Vk_Engine/vk_engine.cpp
+    Vk_Engine/vk_engine.h
+    Vk_Engine/vk_types.h
+    Vk_Engine/vk_initializers.cpp
+    Vk_Engine/vk_initializers.h
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Vk_Engine")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/SDL3-${SDL3_VERSION})
 
@@ -66,3 +91,5 @@ find_package(Vulkan REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)

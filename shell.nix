@@ -48,6 +48,9 @@ pkgs.mkShell {
     # Required for compilation
     pkg-config
     cmake
+
+    # Other Libraries
+    fmt
     
     # Optional but recommended
     libGL
