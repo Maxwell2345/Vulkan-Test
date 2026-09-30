@@ -58,7 +58,7 @@ pkgs.mkShell {
 
   shellHook = ''
     echo "Welcome to MAGE Dev Enviroment!"
-    source libs/Vulkan-1.4.357.1/setup-env.sh 
-    cmake build
+    chmod +x install.sh
+    ./install.sh
   '';
 }

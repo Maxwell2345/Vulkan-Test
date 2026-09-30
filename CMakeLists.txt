@@ -4,9 +4,17 @@ include(FetchContent)
 
 project(Vulkan-Test)
 
-set(SDL3_VERSION "3.4.16")
 set(VULKAN_VERSION "1.4.357.1")
 
+# SDL3 Library
+FetchContent_Declare(
+    SDL3
+    GIT_REPOSITORY "https://github.com/libsdl-org/SDL.git"
+    GIT_TAG        "release-3.4.16" # Replace with your preferred stable tag or 'main'
+)
+FetchContent_MakeAvailable(SDL3)
+
+# GLM Library for Matrix Math
 FetchContent_Declare(
 	glm
 	GIT_REPOSITORY	https://github.com/g-truc/glm.git
@@ -14,33 +22,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
+# String Formatting Library
 FetchContent_Declare(
-  fmt
-  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG        11.0.2 # Use a stable version tag
+	fmt
+	GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+	GIT_TAG        11.0.2 # Use a stable version tag
 )
 FetchContent_MakeAvailable(fmt)
 
+# Vulkan library
 if (LINUX)
 	message(STATUS "Using Linux OS")
-
-	# Check for SDL3
-	message(STATUS "Looking for SDL3")
-	if (NOT EXISTS ${CMAKE_SOURCE_DIR}/libs/SDL3-${SDL3_VERSION})
-		message(STATUS "  Could not find SDL3 Library. Looking for SDL3 Tarball...")
-
-		if (NOT EXISTS ${CMAKE_SOURCE_DIR}/libs/SDL3-${SDL3_VERSION}.tar.gz)
-			message(STATUS "  Could not find SDL Tarball. Downloading and Extracting...")
-			file(DOWNLOAD https://github.com/libsdl-org/SDL/releases/download/release-${SDL3_VERSION}/SDL3-${SDL3_VERSION}.tar.gz ${CMAKE_SOURCE_DIR}/libs/SDL3-${SDL3_VERSION}.tar.gz SHOW_PROGRESS)
-		else()
-			message(STATUS "  SDL3 Tarball found. Extracting...")
-		endif()
-
-		execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/libs/SDL3-${SDL3_VERSION}.tar.gz WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
-		message(STATUS "  SDL3 Library Extracted")
-	else ()
-		message(STATUS "  SDL3 Library Found")
-	endif()
 
 	# Check for Vulkan
 	message(STATUS "Looking for Vulkan")
@@ -64,11 +56,7 @@ if (LINUX)
 elseif (WIN32)
 	message(STATUS "Using Windows OS")
 
-	#Check for SDL3
-
-	#Check for SDL_ttf
-
-	#check for SDL_image
+	# ToDo: Vulkan for Windows
 endif()
 
 find_package(PkgConfig REQUIRED)
@@ -79,13 +67,15 @@ add_executable(${PROJECT_NAME}
 	Vk_Engine/vk_engine.cpp
     Vk_Engine/vk_engine.h
     Vk_Engine/vk_types.h
-    Vk_Engine/vk_initializers.cpp
+	Vk_Engine/vk_initializers.cpp
     Vk_Engine/vk_initializers.h
+	Vk_Engine/vk_images.cpp
+	Vk_Engine/vk_images.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Vk_Engine")
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/libs/SDL3-${SDL3_VERSION})
+add_subdirectory(${CMAKE_SOURCE_DIR}/third_party)
 
 find_package(Vulkan REQUIRED)
 
@@ -93,3 +83,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE vkbootstrap)
+target_link_libraries(${PROJECT_NAME} PRIVATE vma)
+target_link_libraries(${PROJECT_NAME} PRIVATE stb_image)
