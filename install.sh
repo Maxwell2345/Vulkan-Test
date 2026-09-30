@@ -27,9 +27,9 @@ else
     echo "--Vulkan Library Found"
 fi
 
-echo "Running Vulkan setup-env.sh for Vulkan Enviroment Variables"]
+echo "Sourceing Vulkan setup-env.sh for Vulkan Enviroment Variables"]
 chmod +x $VULKAN_LIB_PATH/setup-env.sh
-./$VULKAN_LIB_PATH/setup-env.sh
+source $VULKAN_LIB_PATH/setup-env.sh
 
 echo "Executing CMakeLists.txt"
 cmake -S . -B build
