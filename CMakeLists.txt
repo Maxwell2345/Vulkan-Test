@@ -34,29 +34,9 @@ FetchContent_MakeAvailable(fmt)
 if (LINUX)
 	message(STATUS "Using Linux OS")
 
-	# Check for Vulkan
-	message(STATUS "Looking for Vulkan")
-	if (NOT EXISTS ${CMAKE_SOURCE_DIR}/libs/Vulkan-${VULKAN_VERSION})
-		message(STATUS "  Could not find Vulkan Library. Looking for Vulkan Tarball...")
-
-		if (NOT EXISTS ${CMAKE_SOURCE_DIR}/libs/Vulkan-${VULKAN_VERSION}.tar.xz)
-			message(STATUS "  Could not fund Vulkan Tarball. Downloading and Extracting...")
-			file(DOWNLOAD https://sdk.lunarg.com/sdk/download/1.4.357.1/linux/vulkansdk-linux-x86_64-1.4.357.1.tar.xz ${CMAKE_SOURCE_DIR}/libs/Vulkan-${VULKAN_VERSION}.tar.xz SHOW_PROGRESS)
-		else()
-			message(STATUS "  Vulkan Tarball found. Extracting...")
-		endif()
-
-		execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/libs/Vulkan-${VULKAN_VERSION}.tar.xz WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
-		file(RENAME ${CMAKE_SOURCE_DIR}/libs/${VULKAN_VERSION} ${CMAKE_SOURCE_DIR}/libs/Vulkan-${VULKAN_VERSION})
-		message(STATUS "  Vulkan Libary Extracted")
-	else() 
-		message(STATUS "  Vulkan Library Found")
-	endif()
-
 elseif (WIN32)
 	message(STATUS "Using Windows OS")
 
-	# ToDo: Vulkan for Windows
 endif()
 
 find_package(PkgConfig REQUIRED)
