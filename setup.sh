@@ -7,6 +7,8 @@ echo "Looking for Libs Directory"
 if [ ! -d "$LIBS_DIR" ]; then
     echo "--Libs Directory Missing. Creating Libs Directory"
     mkdir $LIBS_DIR
+else 
+    echo "--Libs Directory Found"
 fi
 
 echo "Looking for Vulkan Library"
@@ -34,4 +36,6 @@ source $VULKAN_LIB_PATH/setup-env.sh
 echo "Executing CMakeLists.txt"
 cmake -S . -B build
 
-chmod +x Vulkan_Test.sh
+chmod +x Vulkan-Test.sh
+echo ""
+echo "Setup Complete! Run ./Vulkan-Test to compile and start the program."

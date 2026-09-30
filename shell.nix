@@ -58,7 +58,7 @@ pkgs.mkShell {
 
   shellHook = ''
     echo "Welcome to MAGE Dev Enviroment!"
-    chmod +x install.sh
-    ./install.sh
+    chmod +x setup.sh
+    ./setup.sh
   '';
 }
