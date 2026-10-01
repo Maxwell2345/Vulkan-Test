@@ -1,6 +1,25 @@
 #pragma once
 
 #include <vk_types.h>
+#include <vk_mem_alloc.h>
+
+struct DeletionQueue {
+	std::deque<std::function<void()>> deletors;
+
+	void push_function(std::function<void()>&& function) {
+		deletors.push_back(function);
+	}
+
+	void flush() {
+
+		// reverse iderate the deletors que to execute all the functions
+		for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
+			(*it)(); // Call Functions
+		};
+
+		deletors.clear();
+	}
+};
 
 struct FrameData {
 	VkSemaphore _swapchainSemaphore, _renderSemaphore;
@@ -8,6 +27,8 @@ struct FrameData {
 
 	VkCommandPool _commandPool;
 	VkCommandBuffer _mainCommandBuffer;
+
+	DeletionQueue _deletionQueue;
 };
 
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -39,6 +60,9 @@ public:
 	//draw loop
 	void draw();
 
+	//draw background
+	void draw_background(VkCommandBuffer cmd);
+
 	//run main loop
 	void run();
 
@@ -54,6 +78,14 @@ public:
 	std::vector<VkImage> _swapchainImages;
 	std::vector<VkImageView> _swapchainImageViews;
 	VkExtent2D _swapchainExtent;
+
+	DeletionQueue _mainDeletionQueue;
+
+	VmaAllocator _allocator;
+
+	// Draw Recources
+	AllocatedImage _drawImage;
+	VkExtent2D _drawExtent;
 
 private:
 

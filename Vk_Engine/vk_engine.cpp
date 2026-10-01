@@ -1,4 +1,4 @@
-#include <vk_engine.h>
+#include "vk_engine.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -12,6 +12,9 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
+
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
 
 constexpr bool bUseValidationLayers = true;
 
@@ -99,6 +102,17 @@ void VulkanEngine::init_vulkan() {
     //use vkbootstrap ro get a graphics queue
     _graphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
     _graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
+
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = _chosenGPU;
+    allocatorInfo.device = _device;
+    allocatorInfo.instance = _instance;
+    allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+    vmaCreateAllocator(&allocatorInfo, &_allocator);
+
+    _mainDeletionQueue.push_function([&]() {
+        vmaDestroyAllocator(_allocator);
+    });
 }
 
 void VulkanEngine::create_swapchain(uint32_t width, uint32_t height) {
@@ -125,6 +139,44 @@ void VulkanEngine::create_swapchain(uint32_t width, uint32_t height) {
 
 void VulkanEngine::init_swapchain() {
     create_swapchain(_windowExtent.width, _windowExtent.height);
+
+    // draw image size will match the window
+    VkExtent3D drawImageExtent = {
+        _windowExtent.width,
+        _windowExtent.height,
+        1
+    };
+
+    // hardcoding the draw format to 32bit float
+    _drawImage.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+	_drawImage.imageExtent = drawImageExtent;
+
+    VkImageUsageFlags drawImageUsages{};
+	drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
+	drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    VkImageCreateInfo rimg_info = vkinit::image_create_info(_drawImage.imageFormat, drawImageUsages, drawImageExtent);
+
+    // for the draw image, we want to allocate it from gpu local memory
+    VmaAllocationCreateInfo rimg_allocinfo = {};
+    rimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    // allocate and create the image
+    vmaCreateImage(_allocator, &rimg_info, &rimg_allocinfo, &_drawImage.image, &_drawImage.allocation, nullptr);
+
+    // build an image view for the draw image to use for rendering
+    VkImageViewCreateInfo rview_info = vkinit::imageview_create_info(_drawImage.imageFormat, _drawImage.image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+    VK_CHECK(vkCreateImageView(_device, &rview_info, nullptr, &_drawImage.imageView));
+
+    // add to deletion queues
+    _mainDeletionQueue.push_function([=]() {
+        vkDestroyImageView(_device, _drawImage.imageView, nullptr);
+        vmaDestroyImage(_allocator, _drawImage.image, _drawImage.allocation);
+    });
 }
 
 void VulkanEngine::destroy_swapchain() {
@@ -202,16 +254,23 @@ void VulkanEngine::run() {
     }
 }
 
+void VulkanEngine::draw_background(VkCommandBuffer cmd) {
+    
+}
+
 void VulkanEngine::draw() {
 
 	// wait until the gpu has finished rendering the last frame. Timeout of 1
-	// second
 	VK_CHECK(vkWaitForFences(_device, 1, &get_current_frame()._renderFence, true, 1000000000));
-	VK_CHECK(vkResetFences(_device, 1, &get_current_frame()._renderFence));
+
+    get_current_frame()._deletionQueue.flush();
 
 	//request image from the swapchain
 	uint32_t swapchainImageIndex;
 	VK_CHECK(vkAcquireNextImageKHR(_device, _swapchain, 1000000000, get_current_frame()._swapchainSemaphore, nullptr, &swapchainImageIndex));
+
+    // reset the fence
+    VK_CHECK(vkResetFences(_device, 1, &get_current_frame()._renderFence));
 
 	//naming it cmd for shorter writing
 	VkCommandBuffer cmd = get_current_frame()._mainCommandBuffer;
@@ -296,7 +355,11 @@ void VulkanEngine::cleanup() {
 		    vkDestroyFence(_device, _frames[i]._renderFence, nullptr);
 		    vkDestroySemaphore(_device, _frames[i]._renderSemaphore, nullptr);
 		    vkDestroySemaphore(_device ,_frames[i]._swapchainSemaphore, nullptr);
+
+            _frames[i]._deletionQueue.flush();
         }
+
+        _mainDeletionQueue.flush();
 
         destroy_swapchain();
 
