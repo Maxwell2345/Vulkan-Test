@@ -6,13 +6,24 @@ project(Vulkan-Test)
 
 set(VULKAN_VERSION "1.4.357.1")
 
-# SDL3 Library
-FetchContent_Declare(
-    SDL3
-    GIT_REPOSITORY "https://github.com/libsdl-org/SDL.git"
-    GIT_TAG        "release-3.4.16" # Replace with your preferred stable tag or 'main'
-)
-FetchContent_MakeAvailable(SDL3)
+# Check if we are on Linux or Windows for SDL3
+if (LINUX)
+	message(STATUS "Using Linux OS")
+
+	# SDL3 Library
+	FetchContent_Declare(
+    	SDL3
+    	GIT_REPOSITORY "https://github.com/libsdl-org/SDL.git"
+    	GIT_TAG        "release-3.4.16" # Replace with your preferred stable tag or 'main'
+	)
+	FetchContent_MakeAvailable(SDL3)
+
+elseif (WIN32)
+	message(STATUS "Using Windows OS")
+
+	find_package(SDL3 REQUIRED)
+endif()
+
 
 # GLM Library for Matrix Math
 FetchContent_Declare(
@@ -30,14 +41,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
-# Vulkan library
-if (LINUX)
-	message(STATUS "Using Linux OS")
-
-elseif (WIN32)
-	message(STATUS "Using Windows OS")
-
-endif()
+# Find Vulkan 
+find_package(Vulkan REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(IBUS REQUIRED ibus-1.0)
@@ -56,8 +61,6 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Vk_Engine")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party)
-
-find_package(Vulkan REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
