@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 4.1.2)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include(FetchContent)
 
 project(Vulkan-Test)
@@ -24,12 +27,19 @@ elseif (WIN32)
 	find_package(SDL3 REQUIRED)
 endif()
 
+# FastGLTF for GLTF Loading
+FetchContent_Declare(
+	fastgltf 
+	GIT_REPOSITORY  https://github.com/spnda/fastgltf.git
+	GIT_TAG			v0.9.1
+)
+FetchContent_MakeAvailable(fastgltf)
 
 # GLM Library for Matrix Math
 FetchContent_Declare(
 	glm
 	GIT_REPOSITORY	https://github.com/g-truc/glm.git
-	GIT_TAG 	0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
+	GIT_TAG 		0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
 )
 FetchContent_MakeAvailable(glm)
 
@@ -56,6 +66,10 @@ add_executable(${PROJECT_NAME}
     Vk_Engine/vk_initializers.h
 	Vk_Engine/vk_images.cpp
 	Vk_Engine/vk_images.h
+	Vk_Engine/vk_descriptors.cpp 
+	Vk_Engine/vk_descriptors.h
+	Vk_Engine/vk_pipelines.cpp 
+	Vk_Engine/vk_pipelines.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Vk_Engine")
@@ -70,3 +84,31 @@ target_link_libraries(${PROJECT_NAME} PRIVATE vkbootstrap)
 target_link_libraries(${PROJECT_NAME} PRIVATE vma)
 target_link_libraries(${PROJECT_NAME} PRIVATE stb_image)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
+target_link_libraries(${PROJECT_NAME} PRIVATE fastgltf)
+
+find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
+
+file(GLOB_RECURSE GLSL_SOURCE_FILES
+    "${PROJECT_SOURCE_DIR}/shaders/*.frag"
+    "${PROJECT_SOURCE_DIR}/shaders/*.vert"
+    "${PROJECT_SOURCE_DIR}/shaders/*.comp"
+    )
+
+foreach(GLSL ${GLSL_SOURCE_FILES})
+  message(STATUS "BUILDING SHADER")
+  get_filename_component(FILE_NAME ${GLSL} NAME)
+  set(SPIRV "${PROJECT_SOURCE_DIR}/shaders/${FILE_NAME}.spv")
+  message(STATUS ${GLSL})
+  add_custom_command(
+    OUTPUT ${SPIRV}
+    COMMAND steam-run ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
+    DEPENDS ${GLSL}
+	VERBATIM
+	)
+  list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+endforeach(GLSL)
+
+add_custom_target(
+    Shaders 
+    DEPENDS ${SPIRV_BINARY_FILES}
+    )

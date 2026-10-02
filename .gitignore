@@ -70,3 +70,9 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# GLSGL Shader Files
+*.spv
+
+# VS Code Folder
+*.vscode
