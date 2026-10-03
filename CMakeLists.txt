@@ -21,41 +21,44 @@ if (LINUX)
 	)
 	FetchContent_MakeAvailable(SDL3)
 
+	# FastGLTF for GLTF Loading
+	FetchContent_Declare(
+		fastgltf 
+		GIT_REPOSITORY  https://github.com/spnda/fastgltf.git
+		GIT_TAG			v0.9.1
+	)
+	FetchContent_MakeAvailable(fastgltf)
+
+	# GLM Library for Matrix Math
+	FetchContent_Declare(
+		glm
+		GIT_REPOSITORY	https://github.com/g-truc/glm.git
+		GIT_TAG 		0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
+	)
+	FetchContent_MakeAvailable(glm)
+
+	# String Formatting Library
+	FetchContent_Declare(
+		fmt
+		GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+		GIT_TAG        11.0.2 # Use a stable version tag
+	)
+	FetchContent_MakeAvailable(fmt)
+
 elseif (WIN32)
 	message(STATUS "Using Windows OS")
 
+	set(SDL3_DIR ${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.16/x86_64-w64-mingw32/lib/cmake/SDL3 CACHE PATH ${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.16/make/SDL3Config.cmake)
 	find_package(SDL3 REQUIRED)
+
+	# add_subdirectory(${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.16)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/fastgltf-0.9.1)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glm-1.0.3)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/fmt-12.2.0)
 endif()
-
-# FastGLTF for GLTF Loading
-FetchContent_Declare(
-	fastgltf 
-	GIT_REPOSITORY  https://github.com/spnda/fastgltf.git
-	GIT_TAG			v0.9.1
-)
-FetchContent_MakeAvailable(fastgltf)
-
-# GLM Library for Matrix Math
-FetchContent_Declare(
-	glm
-	GIT_REPOSITORY	https://github.com/g-truc/glm.git
-	GIT_TAG 		0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
-)
-FetchContent_MakeAvailable(glm)
-
-# String Formatting Library
-FetchContent_Declare(
-	fmt
-	GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-	GIT_TAG        11.0.2 # Use a stable version tag
-)
-FetchContent_MakeAvailable(fmt)
 
 # Find Vulkan 
 find_package(Vulkan REQUIRED)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(IBUS REQUIRED ibus-1.0)
 
 add_executable(${PROJECT_NAME} 
 	Main.cpp
@@ -86,7 +89,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE stb_image)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
 target_link_libraries(${PROJECT_NAME} PRIVATE fastgltf)
 
-find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
+if (WIN32) 
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:SDL3::SDL3>
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        VERBATIM
+    )
+endif()
+
+find_program(GLSL_VALIDATOR glslangValidator HINTS $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
 
 file(GLOB_RECURSE GLSL_SOURCE_FILES
     "${PROJECT_SOURCE_DIR}/shaders/*.frag"
@@ -101,7 +113,7 @@ foreach(GLSL ${GLSL_SOURCE_FILES})
   message(STATUS ${GLSL})
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND steam-run ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
+    COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
     DEPENDS ${GLSL}
 	VERBATIM
 	)

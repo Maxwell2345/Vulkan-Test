@@ -2,23 +2,36 @@
 
 title Vulkan Setup for Windows
 
-set "LIBS_DIR=%~dp0libs"
-
-set "VULKAN_LIB_DIR=%~dp0libs\Vulkan-1.4.363.0"
-set "VULKAN_INSTALLER_PATH=%~dp0libs\vulkansdk-windows-X64-1.4.363.0"
-set "VULKAN_INSTALLER_URL=https://sdk.lunarg.com/sdk/download/1.4.363.0/windows/vulkansdk-windows-X64-1.4.363.0.exe"
-
-set "SDL3_LIB_DIR=%~dp0\libs\SDL3-3.4.16"
-set "SDL3_ZIP_PATH=%~dp0\libs\SDL3-devel-3.4.16-mingw.zip"
-set "SDL3_ZIP_URL=https://github.com/libsdl-org/SDL/releases/download/release-3.4.16/SDL3-devel-3.4.16-mingw.zip"
+set "LIBS_DIR=%~dp0\libs"
 
 set "MSYS2_DIR=C:\msys64"
-set "MSYS2_INSTALLER_PATH=%~dp0libs\msys2-x86_64-20260927.exe"
+set "MSYS2_INSTALLER_PATH=%~dp0\libs\msys2-x86_64-20260927.exe"
 set "MSYS2_INSTALLER_URL=https://github.com/msys2/msys2-installer/releases/download/2026-09-27/msys2-x86_64-20260927.exe"
 set "GCC_ENVIROMENT_VARIABLES_PATH=C:\msys64\ucrt64\bin"
 
-set "CMAKE_INSTALLER_PATH=%~dp0libs\cmake-4.4.4-windows-x86_64.msi"
+set "CMAKE_INSTALLER_PATH=%~dp0\libs\cmake-4.4.4-windows-x86_64.msi"
 set "CMAKE_INSTALLER_URL=https://github.com/Kitware/CMake/releases/download/v4.4.4/cmake-4.4.4-windows-x86_64.msi"
+
+set "VULKAN_LIB_DIR=%~dp0\libs\Vulkan-1.4.363.0"
+set "VULKAN_INSTALLER_PATH=%~dp0\libs\vulkansdk-windows-X64-1.4.363.0"
+set "VULKAN_INSTALLER_URL=https://sdk.lunarg.com/sdk/download/1.4.363.0/windows/vulkansdk-windows-X64-1.4.363.0.exe"
+
+set "SDL3_LIB_DIR=%~dp0\libs\SDL3-3.4.16"
+set "SDL3_ZIP_PATH=%~dp0\libs\SDL3-3.4.16.zip"
+set "SDL3_ZIP_URL=https://github.com/libsdl-org/SDL/releases/download/release-3.4.18/SDL3-devel-3.4.18-mingw.zip"
+
+set "FASTGLTF_LIB_DIR=%~dp0\libs\fastgltf-0.9.1"
+set "FASTGLTF_ZIP_PATH=%~dp0\libs\fastgltf-0.9.1.zip"
+set "FASTGLTF_ZIP_URL=https://github.com/spnda/fastgltf/archive/refs/tags/v0.9.1.zip"
+
+set "GLM_LIB_DIR=%~dp0\libs\glm-1.0.3"
+set "GLM_ZIP_PATH=%~dp0\libs\glm-1.0.3.zip"
+set "GLM_ZIP_URL=https://github.com/g-truc/glm/releases/download/1.0.3/glm-1.0.3.zip"
+
+set "FMT_LIB_DIR=%~dp0\libs\fmt-12.2.0"
+set "FMT_ZIP_PATH=%~dp0\libs\fmt-12.2.0.zip"
+set "FMT_ZIP_URL=https://github.com/fmtlib/fmt/releases/download/12.2.0/fmt-12.2.0.zip"
+
 
 rem Look for libs directory. If not found create it
 echo Looking for Libs Directory
@@ -52,7 +65,7 @@ if NOT DEFINED GCC_PATH (
     )
 
     rem Install MinGW GCC
-    START "" /B /WAIT cmd.exe /C ""%MSYS2_DIR%"\msys2_shell.cmd -defterm -no-start -ucrt64 -c "pacman --noconfirm -S mingw-w64-ucrt-x86_64-gcc""
+    START "" /B /WAIT cmd.exe /C ""%MSYS2_DIR%"\msys2_shell.cmd -defterm -no-start -ucrt64 -c "pacman --noconfirm -S base-devel mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-ninja""
 
     rem Set GCC Eviroment Variables
     setx PATH "%GCC_ENVIROMENT_VARIABLES_PATH%"
@@ -78,9 +91,6 @@ if NOT DEFINED CMAKE_PATH (
     echo -- CMake found at: %CMAKE_PATH%
 )
 
-echo Exiting Program on Line 82
-exit /b 1
-
 rem Look for SDL3. If not found install it
 echo Looking for SDL3 Library
 if not exist "%SDL3_LIB_DIR%" (
@@ -90,7 +100,8 @@ if not exist "%SDL3_LIB_DIR%" (
     curl -L -o "%SDL3_ZIP_PATH%" "%SDL3_ZIP_URL%"
 
     rem Extract SDL3 Zip File
-    tar -xf "%SDL3_ZIP_PATH%" -C "%LIBS_DIR%"
+    mkdir "%SDL3_LIB_DIR%"
+    tar -xf "%SDL3_ZIP_PATH%" -C "%SDL3_LIB_DIR%" --strip-components=1
 
     rem Delete SDL3 Zip File
     del "%SDL3_ZIP_PATH%"
@@ -114,3 +125,59 @@ if not exist "%VULKAN_LIB_DIR%" (
 ) else (
     echo -- Vulkan Library Found
 )
+
+rem Look for FastGLTF Library. If not found install it
+echo Looking for FastGLTF Library
+if not exist "%FASTGLTF_LIB_DIR%" (
+    echo -- Could not find FastGLTF Library. Installing now...
+
+    rem Downlaod FastGLTF Zip File
+    curl -L -o "%FASTGLTF_ZIP_PATH%" "%FASTGLTF_ZIP_URL%"
+
+    rem Extract the FastGLTF Zip File
+    mkdir "%FASTGLTF_LIB_DIR%"
+    tar -xf "%FASTGLTF_ZIP_PATH%" -C "%FASTGLTF_LIB_DIR%" --strip-components=1
+
+    rem Delete FastGLTF Zip File
+    del "%FASTGLTF_ZIP_PATH%"
+) else (
+    echo -- FastGLTF Library Found
+)
+
+rem Look for GLM Library. If not found install it
+echo Looking for GLM Library
+if not exist "%GLM_LIB_DIR%" (
+    echo -- Could not find GLM Library. Installing now...
+
+    rem Downlaod GLM Zip file
+    curl -L -o "%GLM_ZIP_PATH%" "%GLM_ZIP_URL%"
+
+    rem Extract GLM Zip File
+    mkdir "%GLM_LIB_DIR%"
+    tar -xf "%GLM_ZIP_PATH%" -C "%GLM_LIB_DIR%" --strip-components=1
+
+    rem Delete GLM Zip File
+    del "%GLM_ZIP_PATH%"
+) else (
+    echo -- GLM Library Found
+)
+
+rem Look for FMT Library. If not found install it
+echo Looking for FMT Library
+if not exist "%FMT_LIB_DIR%" (
+    echo -- Could not find FMT Library. Installing now...
+
+    rem Download FMT Zip file
+    curl -L -o "%FMT_ZIP_PATH%" "%FMT_ZIP_URL%"
+
+    rem Extract FMT Zip file
+    mkdir "%FMT_LIB_DIR%"
+    tar -xf "%FMT_ZIP_PATH%" -C "%FMT_LIB_DIR%" --strip-components=1
+
+    rem Delete FT Zip file
+    del "%FMT_ZIP_PATH%"
+) else (
+    echo - FMT Library Found
+)
+
+echo Done. You may now run windows-build.bat
