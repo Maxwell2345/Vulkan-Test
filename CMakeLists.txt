@@ -8,10 +8,12 @@ include(FetchContent)
 project(Vulkan-Test)
 
 set(VULKAN_VERSION "1.4.357.1")
+set(STEAM_OPTION "")
 
 # Check if we are on Linux or Windows for SDL3
 if (LINUX)
 	message(STATUS "Using Linux OS")
+	set(STEAM_OPTION "steam-run")
 
 	# SDL3 Library
 	FetchContent_Declare(
@@ -113,7 +115,7 @@ foreach(GLSL ${GLSL_SOURCE_FILES})
   message(STATUS ${GLSL})
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
+    COMMAND ${STEAM_OPTION} ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
     DEPENDS ${GLSL}
 	VERBATIM
 	)
