@@ -48,6 +48,7 @@ pkgs.mkShell {
     # Required for compilation
     pkg-config
     cmake
+    ninja
     gcc
 
     # Other Libraries

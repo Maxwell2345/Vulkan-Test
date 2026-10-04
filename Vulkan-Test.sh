@@ -1,3 +1,4 @@
 cd build/
-make
-steam-run ./Vulkan-Test
+if ninja; then
+    steam-run ./Vulkan-Test
+fi

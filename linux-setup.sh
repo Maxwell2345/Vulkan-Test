@@ -33,12 +33,5 @@ echo "Sourceing Vulkan setup-env.sh for Vulkan Enviroment Variables"
 chmod +x $VULKAN_LIB_PATH/setup-env.sh
 source $VULKAN_LIB_PATH/setup-env.sh
 
-echo "Executing CMakeLists.txt"
-cmake -S . -B build
-
-echo "Compiling Shaders"
-cmake --build build --target Shaders
-
-chmod +x Vulkan-Test.sh
-echo ""
-echo "Setup Complete! Run ./Vulkan-Test to compile and start the program."
+chmod +x linux-build.sh
+echo "Setup Compleate! You may now run linux-build.sh"
