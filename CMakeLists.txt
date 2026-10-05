@@ -16,12 +16,7 @@ if (LINUX)
 	set(STEAM_OPTION "steam-run")
 
 	# SDL3 Library
-	FetchContent_Declare(
-    	SDL3
-    	GIT_REPOSITORY "https://github.com/libsdl-org/SDL.git"
-    	GIT_TAG        "release-3.4.16" # Replace with your preferred stable tag or 'main'
-	)
-	FetchContent_MakeAvailable(SDL3)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.18)
 
 	# FastGLTF for GLTF Loading
 	FetchContent_Declare(
