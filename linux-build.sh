@@ -1,4 +1,5 @@
-source libs/Vulkan-1.4.357.1/setup-env.sh
+chmod +x libs/Vulkan-1.4.363.0/setup-env.sh
+source libs/Vulkan-1.4.363.0/setup-env.sh
 
 echo "Building CMake..."
 if cmake -G "Ninja" . -S . -B build; then

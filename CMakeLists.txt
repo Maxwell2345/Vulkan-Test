@@ -7,7 +7,6 @@ include(FetchContent)
 
 project(Vulkan-Test)
 
-set(VULKAN_VERSION "1.4.357.1")
 set(STEAM_OPTION "")
 
 # Check if we are on Linux or Windows for SDL3
@@ -17,38 +16,16 @@ if (LINUX)
 
 	# SDL3 Library
 	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.18)
-
-	# FastGLTF for GLTF Loading
-	FetchContent_Declare(
-		fastgltf 
-		GIT_REPOSITORY  https://github.com/spnda/fastgltf.git
-		GIT_TAG			v0.9.1
-	)
-	FetchContent_MakeAvailable(fastgltf)
-
-	# GLM Library for Matrix Math
-	FetchContent_Declare(
-		glm
-		GIT_REPOSITORY	https://github.com/g-truc/glm.git
-		GIT_TAG 		0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
-	)
-	FetchContent_MakeAvailable(glm)
-
-	# String Formatting Library
-	FetchContent_Declare(
-		fmt
-		GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-		GIT_TAG        11.0.2 # Use a stable version tag
-	)
-	FetchContent_MakeAvailable(fmt)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/fastgltf-0.9.1)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glm-1.0.3)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/fmt-12.2.0)
 
 elseif (WIN32)
 	message(STATUS "Using Windows OS")
 
-	set(SDL3_DIR ${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.16/x86_64-w64-mingw32/lib/cmake/SDL3 CACHE PATH ${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.16/make/SDL3Config.cmake)
+	set(SDL3_DIR ${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.18/x86_64-w64-mingw32/lib/cmake/SDL3 CACHE PATH ${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.18/make/SDL3Config.cmake)
 	find_package(SDL3 REQUIRED)
 
-	# add_subdirectory(${CMAKE_SOURCE_DIR}/libs/SDL3-3.4.16)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/fastgltf-0.9.1)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/glm-1.0.3)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/libs/fmt-12.2.0)

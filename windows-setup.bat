@@ -16,8 +16,8 @@ set "VULKAN_LIB_DIR=%~dp0\libs\Vulkan-1.4.363.0"
 set "VULKAN_INSTALLER_PATH=%~dp0\libs\vulkansdk-windows-X64-1.4.363.0"
 set "VULKAN_INSTALLER_URL=https://sdk.lunarg.com/sdk/download/1.4.363.0/windows/vulkansdk-windows-X64-1.4.363.0.exe"
 
-set "SDL3_LIB_DIR=%~dp0\libs\SDL3-3.4.16"
-set "SDL3_ZIP_PATH=%~dp0\libs\SDL3-3.4.16.zip"
+set "SDL3_LIB_DIR=%~dp0\libs\SDL3-3.4.18"
+set "SDL3_ZIP_PATH=%~dp0\libs\SDL3-3.4.18.zip"
 set "SDL3_ZIP_URL=https://github.com/libsdl-org/SDL/releases/download/release-3.4.18/SDL3-devel-3.4.18-mingw.zip"
 
 set "FASTGLTF_LIB_DIR=%~dp0\libs\fastgltf-0.9.1"
