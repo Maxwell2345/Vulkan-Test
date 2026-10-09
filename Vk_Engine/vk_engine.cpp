@@ -450,6 +450,9 @@ void VulkanEngine::run() {
             if (e.window.type == SDL_EVENT_WINDOW_RESTORED) {
                 stop_rendering = false;
             }
+
+			// send SDL event toi imgui for handling
+			ImGui_ImplSDL3_ProcessEvent(&e);
         }
 
         // do not draw if we are minimized
